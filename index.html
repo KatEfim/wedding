@@ -1122,5 +1122,81 @@
   })();
 </script>
 
+
+<!-- Фоновая музыка: отдельный файл music.mp3, грузится только по нажатию -->
+<audio id="bgMusic" src="music.mp3" loop preload="none"></audio>
+<button id="musicToggle" class="music-toggle" aria-label="Включить музыку" title="Включить музыку">
+  <span class="music-hint">Включить музыку</span>
+  <svg class="ic-off" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4V5z"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+  <svg class="ic-on"  viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+</button>
+
+<style>
+  .music-toggle{
+    position:fixed; right:18px; bottom:18px; z-index:9999;
+    width:52px; height:52px; border:none; border-radius:50%;
+    background:var(--accent,#ff8562); color:#fff; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 6px 18px rgba(0,0,0,.22);
+    transition:transform .2s ease, box-shadow .2s ease;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .music-toggle:hover{ transform:scale(1.06); }
+  .music-toggle:active{ transform:scale(.96); }
+  .music-toggle.playing{ animation:none; }
+  .music-toggle:not(.playing):not(.touched){ animation:musicPulse 2.4s ease-in-out infinite; }
+  @keyframes musicPulse{
+    0%,100%{ box-shadow:0 6px 18px rgba(0,0,0,.22), 0 0 0 0 rgba(255,133,98,.45); }
+    50%{ box-shadow:0 6px 18px rgba(0,0,0,.22), 0 0 0 12px rgba(255,133,98,0); }
+  }
+  .music-hint{
+    position:absolute; right:60px; white-space:nowrap;
+    background:rgba(0,0,0,.72); color:#fff; font-size:13px;
+    padding:6px 11px; border-radius:14px; pointer-events:none;
+    opacity:1; transition:opacity .4s ease;
+  }
+  .music-hint::after{
+    content:""; position:absolute; right:-5px; top:50%; transform:translateY(-50%);
+    border:5px solid transparent; border-left-color:rgba(0,0,0,.72);
+  }
+  .music-toggle.touched .music-hint{ opacity:0; }
+  @media (max-width:600px){ .music-hint{ display:none; } }
+</style>
+
+<script>
+  (function(){
+    var audio  = document.getElementById('bgMusic');
+    var btn    = document.getElementById('musicToggle');
+    if(!audio || !btn) return;
+    var icOn  = btn.querySelector('.ic-on');
+    var icOff = btn.querySelector('.ic-off');
+
+    function setPlaying(on){
+      btn.classList.toggle('playing', on);
+      icOn.style.display  = on ? 'block' : 'none';
+      icOff.style.display = on ? 'none'  : 'block';
+      btn.setAttribute('aria-label', on ? 'Выключить музыку' : 'Включить музыку');
+      btn.setAttribute('title',      on ? 'Выключить музыку' : 'Включить музыку');
+    }
+
+    btn.addEventListener('click', function(){
+      btn.classList.add('touched');
+      if(audio.paused){
+        var p = audio.play();
+        if(p && p.then){ p.then(function(){ setPlaying(true); })
+                          .catch(function(){ setPlaying(false); }); }
+        else { setPlaying(true); }
+      } else {
+        audio.pause();
+        setPlaying(false);
+      }
+    });
+
+    audio.addEventListener('play',  function(){ setPlaying(true);  });
+    audio.addEventListener('pause', function(){ setPlaying(false); });
+  })();
+</script>
+
+
 </body>
 </html>
